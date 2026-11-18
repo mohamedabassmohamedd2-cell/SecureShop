@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Shopping cart · SecureShop{% endblock %}
+{% block content %}
+<h1>Your cart</h1>
+{% if lines %}
+<table class="table">
+  <thead>
+    <tr><th>Product</th><th>Price</th><th>Quantity</th><th>Line total</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for line in lines %}
+    <tr>
+      <td><a href="{{ url_for('shop.product_detail', product_id=line.product.id) }}">{{ line.product.name }}</a></td>
+      <td>{{ line.product.price|money }}</td>
+      <td>
+        <form method="post" action="{{ url_for('shop.cart_update') }}" class="row">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ line.product.id }}">
+          <input type="number" name="quantity" value="{{ line.qty }}" min="0" max="{{ line.product.stock }}" required>
+          <button type="submit" class="btn btn-small">Update</button>
+        </form>
+      </td>
+      <td>{{ line.line_total|money }}</td>
+      <td>
+        <form method="post" action="{{ url_for('shop.cart_update') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ line.product.id }}">
+          <input type="hidden" name="quantity" value="0">
+          <button type="submit" class="link-button">Remove</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="cart-total">
+  <strong>Total: {{ total|money }} credit</strong>
+  {% if current_user() %}
+    <a class="btn btn-primary" href="{{ url_for('shop.checkout') }}">Checkout</a>
+  {% else %}
+    <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Log in to checkout</a>
+  {% endif %}
+</div>
+{% else %}
+<p>Your cart is empty. <a href="{{ url_for('shop.index') }}">Browse products</a>.</p>
+{% endif %}
+{% endblock %}

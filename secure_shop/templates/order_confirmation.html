@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Order confirmed · SecureShop{% endblock %}
+{% block content %}
+<div class="confirmation">
+  <h1>✅ Order confirmed</h1>
+  <p>Thank you for your order.</p>
+  <p>Order reference: <strong>{{ order.order_ref }}</strong></p>
+  <p>Total charged: {{ order.total|money }} credit</p>
+  <h2>Items</h2>
+  <table class="table">
+    <thead><tr><th>Product</th><th>Price</th><th>Quantity</th></tr></thead>
+    <tbody>
+      {% for item in items %}
+      <tr><td>{{ item.name }}</td><td>{{ item.price|money }}</td><td>{{ item.quantity }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{{ url_for('shop.account') }}">View your orders</a></p>
+</div>
+{% endblock %}

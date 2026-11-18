@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Checkout · SecureShop{% endblock %}
+{% block content %}
+<h1>Checkout</h1>
+<table class="table">
+  <thead><tr><th>Product</th><th>Quantity</th><th>Line total</th></tr></thead>
+  <tbody>
+    {% for line in lines %}
+    <tr>
+      <td>{{ line.product.name }}</td>
+      <td>{{ line.qty }}</td>
+      <td>{{ line.line_total|money }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p><strong>Subtotal: {{ total|money }} credit</strong></p>
+
+<form method="post" action="{{ url_for('shop.checkout') }}" class="checkout-form">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <label for="coupon">Coupon code (optional)</label>
+  <input id="coupon" type="text" name="coupon_code" value="{{ coupon_code }}" placeholder="e.g. STUDENT20">
+  <p class="muted">You will pay with your store credit (current balance: {{ current_user().store_credit|money }}).</p>
+  <button type="submit" class="btn btn-primary">Place order</button>
+</form>
+{% endblock %}
