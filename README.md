@@ -48,6 +48,7 @@ The SQLite database and the auto-generated secret key are created inside the
 | `SECURESHOP_HTTPS=1`     | Enable `Secure` cookies + HSTS (use behind TLS)    |
 | `SECURESHOP_HOST`/`PORT` | Bind address/port (default `127.0.0.1:5000`)       |
 | `SECURESHOP_MAIL_DEV=0`  | Hide in-page confirmation/reset links (no mailer)  |
+| `SECURESHOP_ENFORCE_HOURS=1` | Enforce the 08:00–22:00 login window (Lab 5)  |
 
 ### Test accounts
 
@@ -138,18 +139,29 @@ the course. See:
 | Logging & Alerting Failures         | Structured `audit_log` of security events (admin view) |
 | Mishandling of Exceptional Conditions | Generic error pages, no traceback leakage |
 
+The hands-on **labs** are also covered and mapped in
+**[docs/Security_Coverage_Matrix.md](docs/Security_Coverage_Matrix.md#e-lab-topics-labs-1-5)**:
+
+| Lab | Topic | Where in SecureShop |
+|---|---|---|
+| Lab 1–2 | Business-logic vulnerabilities | `shop.py` (server-side price/stock/coupon/workflow) |
+| Lab 3 | 2FA broken logic | `auth.py` (2FA identity bound to the signed session) |
+| Lab 4 | Behavioural anomaly detection | `behavior.py` + `static/typing.js` (z-score) |
+| Lab 5 | Location, time, passkeys | `risk.py` (haversine, time window) + `passkey.py` (Ed25519) |
+
 ---
 
 ## 4. Run the security self-tests
 
-The self-test suite simulates attacks against the application and asserts they
+Two self-test suites simulate attacks against the application and assert they
 fail (this is the "Step 1 — test it the way an attacker would" evidence).
 
 ```bash
-python tests/test_security.py
+python tests/test_security.py   # OWASP Top 10 + authentication attacks (22 checks)
+python tests/test_labs.py       # Lab 1-5 topics: business logic, 2FA, anomaly, location/time/passkey (21 checks)
 ```
 
-Expected output: `22 passed, 0 failed`.
+Expected output: `All security checks passed.` / `All lab-topic checks passed.`
 
 ---
 
@@ -165,13 +177,17 @@ SecureShop/
 │   ├── db.py                  # parameterised SQL access layer + schema
 │   ├── security.py            # hashing, CSRF, rate-limit, validation, audit
 │   ├── totp.py                # RFC 6238 TOTP
+│   ├── behavior.py            # Lab 4: z-score behavioural anomaly detection
+│   ├── risk.py                # Lab 5: haversine location + time window
+│   ├── passkey.py             # Lab 5: Ed25519 passkey (FIDO2 concept)
 │   ├── auth.py                # authentication blueprint
 │   ├── shop.py                # customer-facing shop blueprint
 │   ├── admin.py               # admin blueprint
 │   ├── templates/             # Jinja templates (auto-escaped)
-│   └── static/                # CSS
+│   └── static/                # CSS + typing.js (keystroke timing)
 ├── tests/
-│   └── test_security.py       # attack self-tests
+│   ├── test_security.py       # OWASP + auth attack self-tests
+│   └── test_labs.py           # Lab 1-5 topic self-tests
 └── docs/                      # reports & coverage matrix
 ```
 
