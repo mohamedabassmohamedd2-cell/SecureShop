@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SecureShop{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="{{ url_for('shop.index') }}">🔒 SecureShop</a>
+    <nav class="nav">
+      <a href="{{ url_for('shop.index') }}">Products</a>
+      <a href="{{ url_for('shop.cart_view') }}">Cart</a>
+      {% if current_user() %}
+        <a href="{{ url_for('shop.account') }}">Account</a>
+        {% if current_user().role == 'admin' %}
+          <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+        {% endif %}
+        <span class="nav-user">{{ current_user().username }}</span>
+        <form class="inline-form" method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Sign up</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>CET431 Software Security — SecureShop project. Demo store; no real payments.</p>
+  </div>
+</footer>
+</body>
+</html>
