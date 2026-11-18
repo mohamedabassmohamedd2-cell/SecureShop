@@ -143,3 +143,36 @@ Legend for "Where in the code": paths are relative to the repository root
 | IDOR | read another user's order | 404 |
 | Price tampering | place order | server re-derives price from DB |
 | Brute force | 6 wrong passwords | account locked (429) |
+
+---
+
+## E. Lab topics (Labs 1–5)
+
+The hands-on labs define the course's attack/defence tooling. Each lab topic is
+mapped to the SecureShop control that counters it.
+
+### Lab 1 & 2 — Business-logic vulnerabilities
+| Lab topic | Attack scenario in SecureShop | Root cause | Defence | Where in the code | Evidence |
+|---|---|---|---|---|---|
+| Excessive trust in client-side controls | Attacker edits the price/quantity/role in a request | Trusting browser-supplied values | Prices & totals re-derived server-side; role from DB; quantity clamped to stock | `shop.py::checkout`, `shop.py::_cart_lines`, `security.py::clean_int` | test_labs "absurd quantity clamped", test_security 11 |
+| Flawed enforcement of business rules | Reuse a single-use coupon / get money back | Rules only checked client-side | `max_uses`/`times_used` enforced server-side; discount can't exceed total | `shop.py::checkout` | test_labs "one-use coupon rejected" |
+| Inconsistent handling of exceptional input | Send `quantity=9999` or invalid types | No coercion/validation | Strict whitelist + integer coercion + clamping | `security.py` (validators, `clean_int`) | test_labs |
+| Insufficient workflow validation | Check out with an empty cart / skip steps | Workflow not enforced server-side | `checkout` requires login + non-empty cart + confirmed email | `shop.py::checkout` | test_labs "empty-cart redirected" |
+
+### Lab 3 — Authentication (2FA broken logic)
+| Lab topic | Attack scenario in SecureShop | Root cause | Defence | Where in the code | Evidence |
+|---|---|---|---|---|---|
+| 2FA broken logic | Attacker switches the target user during the 2FA step | Trusting a client-supplied username/user-id to decide whose code to check | The pending 2FA user is stored in the **signed session** only; the endpoint ignores any client-supplied identity | `auth.py::login` (stages `_pending_2fa_user`), `auth.py::verify_2fa` | test_labs "2FA step ignores client-supplied username" |
+
+### Lab 4 — Behavioural anomaly detection
+| Lab topic | Attack scenario in SecureShop | Root cause | Defence | Where in the code | Evidence |
+|---|---|---|---|---|---|
+| Keystroke/typing anomaly | A pasted or scripted password (different rhythm) after a real password | Authenticate once, trust forever | z-score anomaly detector over `typing_speed`, `gap_mean`, `hour`; flags anomalous logins (audit + step-up when MFA present) | `behavior.py`, `auth.py::_record_and_score_behavior`, `static/typing.js` | test_labs Lab4 unit + integration |
+
+### Lab 5 — Location, time, and passkeys
+| Lab topic | Attack scenario in SecureShop | Root cause | Defence | Where in the code | Evidence |
+|---|---|---|---|---|---|
+| Location (haversine) | Login from a far-away location | No distance policy | `haversine_km` / `location_ok` with an enrolled radius (50 km) | `risk.py` | test_labs haversine checks |
+| Time window | Login at an unexpected hour | No access window | Optional `[08:00, 22:00)` login window enforced server-side (opt-in via config) | `risk.py::time_allowed`, `auth.py` | test_labs time-window integration |
+| TOTP (time-based) | Sniffed/replayed one-time code | No one-time enforcement | RFC 6238 TOTP with ±30 s drift and `last_totp_counter` replay prevention | `totp.py`, `auth.py` | test_security 8 |
+| Passkey (FIDO2) | A look-alike site or replay signs a stolen challenge | Shared secrets / missing signature verification | Ed25519 passkey: server stores only the public key; verifies signature **and** credential id | `passkey.py` | test_labs passkey unit tests |

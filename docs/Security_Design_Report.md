@@ -201,6 +201,29 @@ The continuous iterative cycle used for each threat:
   **defence in depth**, **fail secure**, **open design**, and **psychological
   acceptability** are applied as summarised in the Coverage Matrix (§C).
 
+### 6.11 Lab-driven defences (Labs 1–5)
+
+The hands-on labs are the course's attack/defence tooling; the following
+controls are built into the application itself.
+
+- **Business-logic (Labs 1–2)**. No value that must be trusted is taken from the
+  client: prices/totals/stock/roles are re-derived server-side, coupon
+  `max_uses` is enforced server-side, and workflow steps (login → non-empty cart
+  → confirmed email → checkout) are validated server-side.
+- **2FA broken logic (Lab 3)**. The pending two-factor user lives in the signed
+  session, never in a client-supplied field, so an attacker cannot redirect the
+  second factor to a different account.
+- **Behavioural anomaly detection (Lab 4)**. A z-score detector (mean/std per
+  feature over the user's login history) scores `typing_speed`, `gap_mean`, and
+  the server-side `hour`. An anomaly is written to the audit log and triggers a
+  step-up where MFA is enrolled.
+- **Location, time, passkeys (Lab 5)**. `haversine_km` + an enrolled radius
+  implement the location policy; an optional `[08:00, 22:00)` access window
+  implements the time policy (opt-in via configuration); an Ed25519 passkey
+  module demonstrates FIDO2-style challenge signing where only the public key is
+  stored. The practical login path uses sessions + TOTP; passkeys are the
+  documented AAL3 upgrade.
+
 ---
 
 ## 7. Security requirements traceability

@@ -194,7 +194,84 @@ valid TOTP code; each code is usable once (`last_totp_counter`).
 
 ---
 
+## 10. Business-logic attacks (Labs 1–2)
+
+**Attempts**
+
+| # | Vector | Action | Result |
+|---|---|---|---|
+| 1 | Price tampering | Submit an order after editing request fields | price re-derived from DB (see §5) |
+| 2 | Absurd quantity | `quantity=9999` on a stock-10 item | clamped to stock (10), stock reduced correctly |
+| 3 | Coupon reuse | Apply a `max_uses=1` coupon twice | second use rejected ("already been used") |
+| 4 | Workflow skip | `GET /checkout` with an empty cart | redirected to the cart; no order created |
+
+**Evidence**: `tests/test_labs.py` (Lab1/Lab2 checks).
+
+## 11. 2FA broken logic (Lab 3)
+
+**Vulnerable pattern** (PortSwigger "2FA broken logic"): the app trusts a
+client-supplied username/cookie to decide whose one-time code to verify, letting
+an attacker log in as a victim by supplying the victim's username with their own
+valid 2FA code.
+
+**SecureShop pattern**: the pending 2FA user is stored only in the signed
+session (`_pending_2fa_user`). The `/login/2fa` endpoint has no username/user-id
+parameter.
+
+**Attempts**
+
+| # | Action | Result |
+|---|---|---|
+| 1 | `GET /login/2fa` without first authenticating | 302 → `/login` |
+| 2 | `POST /login/2fa` with `username=admin` + a code | ignored; redirected to `/login` |
+
+**Evidence**: `tests/test_labs.py` (Lab3 checks).
+
+## 12. Behavioural anomaly detection (Lab 4)
+
+**Vulnerable pattern**: authenticate once (password), then trust the session
+forever — a pasted password or stolen session is never questioned.
+
+**SecureShop pattern**: the login page captures keystroke timing
+(`static/typing.js`); the server records each successful login's `typing_speed`,
+`gap_mean`, and `hour`, builds a mean/std profile, and z-scores the new login.
+An anomaly score above 3.0 is written to the audit log as `login_anomaly` (and
+enforces MFA where enrolled).
+
+**Attempt**: build a normal profile for `alice` (speed ≈ 6 keys/s, gap ≈ 0.15 s),
+then log in with `typing_speed=100` (pasted).
+
+**Result**: login succeeds but the audit log records `login_anomaly`.
+
+**Evidence**: `tests/test_labs.py` (Lab4 unit + integration).
+
+## 13. Location, time, and passkeys (Lab 5)
+
+**Location** — `haversine_km` returns ≈ 0 km for home, ≈ 4.3 km for a nearby
+point, ≈ 3511 km for London; `location_ok` accepts inside 50 km and rejects
+London.
+
+**Time window** — with the policy enabled, a login at 03:00 is rejected (403) and
+one at 10:00 is accepted (302).
+
+**Passkey** — an Ed25519 passkey accepts a genuine signature, rejects a single
+flipped byte, rejects a mismatched credential id, and rejects a signature over a
+different challenge.
+
+**Evidence**: `tests/test_labs.py` (Lab5 checks).
+
+---
+
 ## Automated self-test output
+
+Two suites provide reproducible evidence:
+
+```bash
+python tests/test_security.py   # OWASP Top 10 + auth attacks  -> 22 passed
+python tests/test_labs.py       # Lab 1-5 topics               -> 21 passed
+```
+
+`tests/test_security.py`:
 
 ```
 == SecureShop self-test ==

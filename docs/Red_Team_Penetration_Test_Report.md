@@ -56,6 +56,18 @@ confirmed fixed.
 All attempted attacks were blocked by the defences documented in the Security
 Coverage Matrix and the Security Design Report.
 
+### Lab-topic findings (Labs 1–5)
+
+| # | Finding | What was tried | Result | Severity | Status |
+|---|---|---|---|---|---|
+| F14 | Excessive trust in client-side controls | Submit `quantity=9999` | clamped to stock | High | **Mitigated** |
+| F15 | Flawed business rules | Reuse a one-use coupon | rejected ("already been used") | Medium | **Mitigated** |
+| F16 | Insufficient workflow validation | `GET /checkout` with empty cart | redirected to cart | Medium | **Mitigated** |
+| F17 | 2FA broken logic | Supply `username=admin` at the 2FA step | ignored; identity is session-bound | High | **Mitigated** |
+| F18 | Anomalous login rhythm | Paste the password (`typing_speed=100`) | flagged as `login_anomaly` | Medium | **Mitigated** |
+| F19 | Login outside access window | login at 03:00 with policy on | 403 (blocked) | Medium | **Mitigated** |
+| F20 | Passkey forgery / replay | flip signature byte / wrong credential / reuse challenge | all rejected | High | **Mitigated** |
+
 ---
 
 ## 4. Attack narratives (selected)
