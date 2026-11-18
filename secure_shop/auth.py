@@ -6,8 +6,8 @@ import time
 import urllib.parse
 
 from flask import (
-    Blueprint, abort, flash, g, redirect, render_template, request,
-    session, url_for,
+    Blueprint, abort, current_app, flash, g, redirect, render_template,
+    request, session, url_for,
 )
 
 from .db import execute, query
@@ -17,6 +17,8 @@ from .security import (
     valid_email, valid_username, verify_password,
 )
 from .totp import current_code, generate_secret, verify as totp_verify
+from . import behavior
+from .risk import time_allowed
 
 bp = Blueprint("auth", __name__)
 
@@ -37,6 +39,59 @@ def _validated_password(pw):
     if len(pw) < 12:
         return False
     return True
+
+
+def _record_and_score_behavior(u):
+    """Lab 4 pipeline: record this successful login's features, then compare the
+    new login against the user's history with the z-score anomaly detector.
+
+    Returns (anomaly_score, is_anomaly). Gracefully skips when the browser did
+    not send keystroke timing (no typing_speed/gap_mean), using only the hour.
+    """
+    import time as _time
+    hour = _time.localtime().tm_hour
+
+    ts_raw = request.form.get("typing_speed")
+    gm_raw = request.form.get("gap_mean")
+    typing_speed = None
+    gap_mean = None
+    if ts_raw:
+        try:
+            v = float(ts_raw)
+            if 0.05 <= v <= 200.0:      # reject absurd client values
+                typing_speed = v
+        except ValueError:
+            pass
+    if gm_raw:
+        try:
+            v = float(gm_raw)
+            if 0.001 <= v <= 5.0:
+                gap_mean = v
+        except ValueError:
+            pass
+
+    # Record the (successful) login for future comparisons.
+    execute(
+        "INSERT INTO login_behavior (user_id, hour, typing_speed, gap_mean) VALUES (?, ?, ?, ?)",
+        (u["id"], hour, typing_speed, gap_mean),
+    )
+
+    history = query(
+        "SELECT hour, typing_speed, gap_mean FROM login_behavior WHERE user_id = ?"
+        " AND id < (SELECT MAX(id) FROM login_behavior WHERE user_id = ?) ORDER BY id",
+        (u["id"], u["id"]),
+    )
+    if len(history) < current_app.config["BEHAVIOR_MIN_HISTORY"]:
+        return None, False
+
+    profile = behavior.build_profile([dict(r) for r in history])
+    login = {"typing_speed": typing_speed, "gap_mean": gap_mean, "hour": hour}
+    score = behavior.anomaly_score(login, profile)
+    flagged = behavior.decide(score, current_app.config["BEHAVIOR_THRESHOLD"])
+    if flagged:
+        audit("login_anomaly", username=u["username"],
+              detail=f"behavior anomaly score={score:.2f}")
+    return score, flagged
 
 
 @bp.route("/register", methods=("GET", "POST"))
@@ -134,12 +189,30 @@ def login():
             flash(GENERIC_LOGIN_ERROR, "error")
             return render_template("login.html", username=username), 401
 
-        # Password accepted. If 2FA is enabled, stage the user and ask for a code.
+        # Password accepted. Run the Lab 5 time-window policy and the Lab 4
+        # behavioural anomaly detector before finalising the login.
+        if current_app.config["ENFORCE_LOGIN_HOURS"]:
+            import time as _time
+            hour = _time.localtime().tm_hour
+            if not time_allowed(hour, current_app.config["LOGIN_WINDOW_START"],
+                                current_app.config["LOGIN_WINDOW_END"]):
+                audit("login_outside_window", username=username, detail=f"hour={hour}")
+                flash("Logins are not allowed for this account at the current time.", "error")
+                return render_template("login.html", username=username), 403
+
+        score, flagged = _record_and_score_behavior(u)
+
+        # If 2FA is enabled, stage the user and ask for a code.
         if u["totp_secret"]:
             session["_pending_2fa_user"] = u["id"]
             session["_2fa_ts"] = int(time.time())
             audit("login_password_ok_2fa_pending", username=username)
             return redirect(url_for("auth.verify_2fa"))
+
+        if flagged:
+            # Anomalous behaviour with no MFA enrolled: allow but make it loud in
+            # the audit log (a production system would force a step-up here).
+            flash("Unusual sign-in pattern detected. Review your recent activity.", "warning")
 
         _regenerate_session()
         session["user_id"] = u["id"]

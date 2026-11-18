@@ -36,6 +36,19 @@ class Config:
     TOTP_ISSUER = "SecureShop"
     TOTP_WINDOW = 1                              # +-30 s clock drift tolerance
 
+    # ---- Lab 4: behavioural anomaly detection ----
+    BEHAVIOR_THRESHOLD = 3.0                     # average z-score that flags an anomaly
+    BEHAVIOR_MIN_HISTORY = 3                     # logins needed before a profile is trusted
+
+    # ---- Lab 5: location & time window policy ----
+    # The access window is a demo policy (off by default so the app can be
+    # demonstrated at any hour). Set SECURESHOP_ENFORCE_HOURS=1 to require the
+    # login to fall inside LOGIN_WINDOW_START..END (server local time).
+    ENFORCE_LOGIN_HOURS = os.environ.get("SECURESHOP_ENFORCE_HOURS", "") == "1"
+    LOGIN_WINDOW_START = 8                       # 08:00
+    LOGIN_WINDOW_END = 22                        # up to but not including 22:00
+    LOCATION_RADIUS_KM = 50.0                    # enrolled-home radius
+
     # ---- Demo / development convenience ----
     # When True, account-confirmation and password-reset links are shown in the
     # UI and written to the console because no real mail server is configured.

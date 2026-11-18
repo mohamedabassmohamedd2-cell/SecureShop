@@ -85,6 +85,15 @@ CREATE TABLE IF NOT EXISTS login_throttle (
     first_failed_at INTEGER,
     locked_until    INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS login_behavior (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id       INTEGER NOT NULL REFERENCES users(id),
+    ts            TEXT    NOT NULL DEFAULT (datetime('now')),
+    hour          INTEGER NOT NULL,
+    typing_speed  REAL,
+    gap_mean      REAL
+);
 """
 
 
