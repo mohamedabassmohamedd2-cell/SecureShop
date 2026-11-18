@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Admin · New product · SecureShop{% endblock %}
+{% block content %}
+<h1>New product</h1>
+<div class="auth-card">
+  <form method="post" action="{{ url_for('admin.new_product') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <label for="name">Name</label>
+    <input id="name" type="text" name="name" value="{{ name or '' }}" required>
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="3" required>{{ description or '' }}</textarea>
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      {% for c in ['electronics','books','clothing','home','toys'] %}
+        <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c|capitalize }}</option>
+      {% endfor %}
+    </select>
+    <label for="price">Price</label>
+    <input id="price" type="number" step="0.01" min="0.01" name="price" value="{{ price or '' }}" required>
+    <label for="stock">Stock</label>
+    <input id="stock" type="number" min="0" name="stock" value="{{ stock if stock is not none else 10 }}">
+    <button type="submit" class="btn btn-primary">Save product</button>
+  </form>
+</div>
+{% endblock %}

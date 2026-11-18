@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Admin · Coupons · SecureShop{% endblock %}
+{% block content %}
+<h1>Admin panel</h1>
+<div class="admin-nav">
+  <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('admin.users') }}">Users</a>
+  <a href="{{ url_for('admin.products') }}">Products</a>
+  <a href="{{ url_for('admin.coupons') }}">Coupons</a>
+</div>
+
+<section class="panel">
+  <h2>Create coupon</h2>
+  <form method="post" action="{{ url_for('admin.new_coupon') }}" class="row">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="text" name="code" placeholder="COUPON CODE" required>
+    <input type="number" name="discount_percent" min="1" max="100" placeholder="Discount %" required>
+    <input type="number" name="max_uses" min="1" placeholder="Max uses (optional)">
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</section>
+
+<table class="table">
+  <thead><tr><th>Code</th><th>Discount</th><th>Used</th><th>Max uses</th><th>Active</th><th></th></tr></thead>
+  <tbody>
+    {% for c in coupons %}
+    <tr>
+      <td>{{ c.code }}</td>
+      <td>{{ c.discount_percent }}%</td>
+      <td>{{ c.times_used }}</td>
+      <td>{{ c.max_uses or '∞' }}</td>
+      <td>{{ 'Yes' if c.active else 'No' }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.toggle_coupon', coupon_id=c.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button">{{ 'Deactivate' if c.active else 'Activate' }}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

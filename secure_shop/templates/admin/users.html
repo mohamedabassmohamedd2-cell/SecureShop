@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Admin · Users · SecureShop{% endblock %}
+{% block content %}
+<h1>Admin panel</h1>
+<div class="admin-nav">
+  <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('admin.users') }}">Users</a>
+  <a href="{{ url_for('admin.products') }}">Products</a>
+  <a href="{{ url_for('admin.coupons') }}">Coupons</a>
+</div>
+<table class="table">
+  <thead>
+    <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Credit</th><th>Active</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.role }}</td>
+      <td>{{ u.store_credit|money }}</td>
+      <td>{{ 'Yes' if u.active else 'No' }}</td>
+      <td class="actions">
+        <form class="inline-form" method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button">{{ 'Deactivate' if u.active else 'Activate' }}</button>
+        </form>
+        <form class="inline-form" method="post" action="{{ url_for('admin.set_role', user_id=u.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <select name="role">
+            <option value="user" {% if u.role == 'user' %}selected{% endif %}>user</option>
+            <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>admin</option>
+          </select>
+          <button type="submit" class="link-button">Set role</button>
+        </form>
+        <form class="inline-form" method="post" action="{{ url_for('admin.set_credit', user_id=u.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="number" name="amount" step="0.01" min="0" value="{{ u.store_credit }}" style="width:90px">
+          <button type="submit" class="link-button">Set credit</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

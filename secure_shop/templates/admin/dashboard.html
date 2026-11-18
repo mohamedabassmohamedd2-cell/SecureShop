@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Admin · SecureShop{% endblock %}
+{% block content %}
+<h1>Admin panel</h1>
+<div class="admin-nav">
+  <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('admin.users') }}">Users</a>
+  <a href="{{ url_for('admin.products') }}">Products</a>
+  <a href="{{ url_for('admin.coupons') }}">Coupons</a>
+</div>
+<div class="grid stats">
+  <div class="card"><h2>{{ stats.users }}</h2><p>Users</p></div>
+  <div class="card"><h2>{{ stats.products }}</h2><p>Products</p></div>
+  <div class="card"><h2>{{ stats.orders }}</h2><p>Orders</p></div>
+  <div class="card"><h2>{{ stats.coupons }}</h2><p>Coupons</p></div>
+</div>
+
+<section class="panel">
+  <h2>Recent security events</h2>
+  <table class="table">
+    <thead><tr><th>Time</th><th>Event</th><th>User</th><th>IP</th><th>Detail</th></tr></thead>
+    <tbody>
+      {% for e in recent %}
+      <tr><td>{{ e.ts }}</td><td>{{ e.event_type }}</td><td>{{ e.username or '—' }}</td><td>{{ e.ip }}</td><td>{{ e.detail or '' }}</td></tr>
+      {% else %}
+      <tr><td colspan="5">No events yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
