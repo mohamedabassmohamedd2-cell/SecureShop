@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Enable 2FA · SecureShop{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1>Enable two-factor authentication</h1>
+  <p>Scan this with your authenticator app, or enter the secret manually:</p>
+  <p class="secret-box"><code>{{ secret }}</code></p>
+  <p class="muted">Secret: {{ secret }}</p>
+  <form method="post" action="{{ url_for('auth.setup_2fa') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="enable">
+    <label for="code">Enter the current 6-digit code to confirm</label>
+    <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+    <button type="submit" class="btn btn-primary">Enable 2FA</button>
+  </form>
+</div>
+{% endblock %}

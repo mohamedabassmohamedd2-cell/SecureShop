@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Log in · SecureShop{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1>Log in</h1>
+  <form method="post" action="{{ url_for('auth.login') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <label for="username">Username</label>
+    <input id="username" type="text" name="username" value="{{ username or '' }}" required autocomplete="username">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" required autocomplete="current-password">
+    <button type="submit" class="btn btn-primary">Log in</button>
+  </form>
+  <p class="muted">No account? <a href="{{ url_for('auth.register') }}">Sign up</a></p>
+</div>
+{% endblock %}
