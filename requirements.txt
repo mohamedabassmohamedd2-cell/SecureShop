@@ -1,0 +1,4 @@
+# SecureShop dependencies (pinned for reproducible, audited builds)
+# Software Supply Chain: versions are pinned; review before upgrading.
+Flask==3.1.3
+bcrypt==4.3.0
