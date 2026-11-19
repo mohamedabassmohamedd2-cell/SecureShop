@@ -39,7 +39,7 @@ Render has a ready-made config in this repo: [`render.yaml`](../render.yaml).
 
 **Render free-tier notes:**
 - The free instance **sleeps after ~15 minutes of no traffic**; the first request
-  after sleep can take ~30–60 s to wake.
+  after sleep can take ~30–60 s to wake (fix it for free — see **Option A.2** below).
 - Free services have **no persistent disk**, so the SQLite file resets on each
   redeploy. For persistent data, attach a free **Neon PostgreSQL** DB (below) or
   use PythonAnywhere.
@@ -60,6 +60,32 @@ environment variable to a `postgresql://…` URL.
 
 > Note: add `?sslmode=require` to the Neon URL (Neon requires TLS), or use the
 > "connection string" Neon shows in its dashboard (it already includes it).
+
+### Option A.2 — Keep it awake (stop the 15-minute sleep, free)
+
+Render's free tier puts the app to sleep after ~15 minutes with no traffic.
+A free uptime monitor that pings the site every 5 minutes prevents that sleep
+(any HTTP request counts as traffic).
+
+**With UptimeRobot (free):**
+
+1. Sign up at <https://uptimerobot.com> (free account).
+2. **+ New monitor** → type **HTTP(s)**.
+3. Set:
+   - Friendly name: `SecureShop`
+   - URL: `https://yourdomain.com` (or your `https://….onrender.com` URL)
+   - Monitoring interval: **5 minutes**
+4. **Create monitor**. UptimeRobot now requests the homepage every 5 minutes, so
+   Render never goes to sleep — your store loads instantly for real visitors.
+
+**Alternative: cron-job.org (free)**
+
+1. Sign up at <https://cron-job.org>.
+2. **New cron job** → Address: `https://yourdomain.com/` → Schedule: **every 5 minutes**.
+3. Save. Same effect: keeps the app warm.
+
+> Tip: point the monitor at the **homepage** (`/`). Avoid `/admin` or login pages
+> so the pings don't generate failed-login or rate-limit noise in your audit log.
 
 ---
 
