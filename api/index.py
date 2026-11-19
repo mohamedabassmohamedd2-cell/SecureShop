@@ -49,9 +49,14 @@ class VercelPathFix:
             full = full[len(self.prefix):]
         elif full.startswith(self.prefix):
             full = "/" + full[len(self.prefix):]
+
+        def sr(status, headers, exc_info=None):
+            headers.append(("X-Diag", f"script={script} path={path} -> {full}"))
+            return start_response(status, headers, exc_info)
+
         environ["SCRIPT_NAME"] = ""
         environ["PATH_INFO"] = full or "/"
-        return self.wsgi_app(environ, start_response)
+        return self.wsgi_app(environ, sr)
 
 
 app.wsgi_app = VercelPathFix(app.wsgi_app)
