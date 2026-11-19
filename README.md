@@ -35,10 +35,14 @@ Then open **http://127.0.0.1:5000** in a browser.
 
 ### Database
 
-SecureShop uses **SQLite** — a single-file, serverless database stored at
-`instance/secureshop.db`. It requires no database server to run, which makes
-deployment simple. For higher traffic or multiple app instances, switch to
-**PostgreSQL** (see `docs/DEPLOYMENT.md`).
+SecureShop uses **SQLite** by default — a single-file, serverless database stored
+at `instance/secureshop.db`. It requires no database server, which makes local
+development simple.
+
+For production, set the `DATABASE_URL` environment variable to a
+`postgresql://…` connection string (e.g. a free **Neon** database) and the app
+automatically switches to **PostgreSQL**. The parameterised query layer is
+identical for both backends, so no application code changes are needed.
 
 The database and the auto-generated secret key are created inside the `instance/`
 folder on first run (both are git-ignored).

@@ -41,8 +41,25 @@ Render has a ready-made config in this repo: [`render.yaml`](../render.yaml).
 - The free instance **sleeps after ~15 minutes of no traffic**; the first request
   after sleep can take ~30–60 s to wake.
 - Free services have **no persistent disk**, so the SQLite file resets on each
-  redeploy. For persistent data, attach a free **Neon PostgreSQL** DB (see
-  `docs/DEPLOYMENT.md` §6) or use PythonAnywhere.
+  redeploy. For persistent data, attach a free **Neon PostgreSQL** DB (below) or
+  use PythonAnywhere.
+
+### Option A.1 — Add a free Neon PostgreSQL database (persistent data)
+
+SecureShop supports PostgreSQL automatically — just set the `DATABASE_URL`
+environment variable to a `postgresql://…` URL.
+
+1. Sign up at <https://neon.tech> (free tier: ~0.5 GB storage, enough for a store).
+2. Create a **Project** → Neon gives you a connection string like:
+   `postgresql://user:pass@ep-xxx.region.aws.neon.tech/neondb?sslmode=require`
+3. In Render, open your service → **Environment** → add a variable:
+   - Key: `DATABASE_URL`
+   - Value: your Neon connection string
+4. Render redeploys; on first boot SecureShop creates the tables and seeds the
+   store into Neon. Data now persists across redeploys and restarts.
+
+> Note: add `?sslmode=require` to the Neon URL (Neon requires TLS), or use the
+> "connection string" Neon shows in its dashboard (it already includes it).
 
 ---
 

@@ -12,6 +12,9 @@ class Config:
     # ---- Application ----
     APP_NAME = "SecureShop"
     DATABASE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance", "secureshop.db")
+    # PostgreSQL connection string (e.g. free Neon tier). When set, PostgreSQL is
+    # used instead of the local SQLite file.
+    DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
     # ---- Secrets (never hard-coded) ----
     # SECURESHOP_SECRET_KEY overrides the auto-generated instance secret.
