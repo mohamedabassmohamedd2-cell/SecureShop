@@ -3,7 +3,7 @@
 {% block content %}
 <section class="hero">
   <h1>Shop securely</h1>
-  <p>A small e-commerce demo hardened against the OWASP Top 10 and the attacks covered in CET431.</p>
+  <p>Quality products, secure checkout, and fast delivery — shop with confidence.</p>
   {% if not current_user() %}
   <form method="post" action="{{ url_for('shop.newsletter') }}" class="newsletter">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
