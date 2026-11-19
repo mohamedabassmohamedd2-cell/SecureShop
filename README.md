@@ -1,14 +1,11 @@
-# SecureShop — CET431 Software Security Project
+# SecureShop
 
-A small e-commerce web application designed, built, and hardened to **resist the
-vulnerabilities and attacks covered in CET431 Software Security**. Both the
-features and the security of the site are graded.
+A secure e-commerce web application built with Flask and hardened against the
+OWASP Top 10 and modern authentication attacks.
 
-- **Application**: Flask (Python) + SQLite
-- **Team**: 3 Red Team members (attack) + 3 Blue Team members (build & defend)
-
-> ⚠️ This is a **teaching/demo** store. There are no real payments and no real
-> users. All accounts and products are seeded demo data.
+- **Application**: Flask (Python)
+- **Database**: SQLite (single-file, zero-config) — see "Database" below
+- **Deployment**: see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
 
@@ -36,8 +33,15 @@ python run.py
 
 Then open **http://127.0.0.1:5000** in a browser.
 
-The SQLite database and the auto-generated secret key are created inside the
-`instance/` folder on first run (both are git-ignored).
+### Database
+
+SecureShop uses **SQLite** — a single-file, serverless database stored at
+`instance/secureshop.db`. It requires no database server to run, which makes
+deployment simple. For higher traffic or multiple app instances, switch to
+**PostgreSQL** (see `docs/DEPLOYMENT.md`).
+
+The database and the auto-generated secret key are created inside the `instance/`
+folder on first run (both are git-ignored).
 
 ### Configuration (environment variables)
 
@@ -50,7 +54,7 @@ The SQLite database and the auto-generated secret key are created inside the
 | `SECURESHOP_MAIL_DEV=0`  | Hide in-page confirmation/reset links (no mailer)  |
 | `SECURESHOP_ENFORCE_HOURS=1` | Enforce the 08:00–22:00 login window (Lab 5)  |
 
-### Test accounts
+### Default accounts
 
 | Role  | Username | Password                 | Notes                       |
 |-------|----------|--------------------------|-----------------------------|
@@ -58,9 +62,9 @@ The SQLite database and the auto-generated secret key are created inside the
 | User  | `alice`  | `Alice@SecureShop2026!`  | Normal customer             |
 | User  | `bob`    | `Bob@SecureShop2026!`    | Normal customer             |
 
-> Replace these with your own team accounts before the live demo. Demo
-> confirmation links appear on screen (and in the console) because no real mail
-> server is configured.
+> Change these passwords (or delete the seeded accounts) before going live.
+> Account-confirmation links appear on screen (and in the console) unless you
+> configure a real mail server (`SECURESHOP_MAIL_DEV=0`).
 
 ---
 
@@ -169,8 +173,10 @@ Expected output: `All security checks passed.` / `All lab-topic checks passed.`
 
 ```
 SecureShop/
-├── run.py                     # entry point
-├── requirements.txt           # pinned dependencies
+├── run.py                     # development entry point
+├── wsgi.py                    # production WSGI entry point
+├── requirements.txt           # pinned application dependencies
+├── requirements-prod.txt      # production WSGI server (gunicorn/waitress)
 ├── secure_shop/               # application package
 │   ├── __init__.py            # app factory, error handlers, headers
 │   ├── config.py              # configuration & secret handling
@@ -188,16 +194,27 @@ SecureShop/
 ├── tests/
 │   ├── test_security.py       # OWASP + auth attack self-tests
 │   └── test_labs.py           # Lab 1-5 topic self-tests
-└── docs/                      # reports & coverage matrix
+└── docs/                      # reports, coverage matrix, deployment guide
 ```
 
 ---
 
-## 6. Notes for the team
+## 6. Deployment
 
-- **Commit history**: each feature/defence is committed under the responsible
-  team member's identity (3 Blue Team builders + 3 Red Team testers). Replace
-  the placeholder names/emails with your real ones.
-- **Live demo**: plan a 10–15 minute walkthrough (features → security → attack
-  attempts that fail → admin panel → audit log). Every member should be able to
-  explain their own part during Q&A.
+To host SecureShop on a domain, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
+for full instructions covering:
+
+- Production WSGI server (gunicorn on Linux / waitress on Windows)
+- Reverse proxy (nginx) + TLS certificate (Let's Encrypt)
+- Pointing a domain name at your server
+- Environment configuration for production (`SECURESHOP_HTTPS=1`, secrets, mail)
+
+Quick start (production server on the machine):
+
+```bash
+pip install -r requirements-prod.txt
+# Linux / macOS:
+gunicorn -w 3 -b 0.0.0.0:8000 wsgi:app
+# Windows:
+waitress-serve --listen=0.0.0.0:8000 wsgi:app
+```

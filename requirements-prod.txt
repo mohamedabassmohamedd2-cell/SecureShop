@@ -1,0 +1,7 @@
+# Production WSGI server for SecureShop.
+# Install with:  pip install -r requirements.txt -r requirements-prod.txt
+#
+# gunicorn  -> Linux / macOS (preferred)
+# waitress  -> Windows / cross-platform
+gunicorn==23.0.0
+waitress==3.0.2
