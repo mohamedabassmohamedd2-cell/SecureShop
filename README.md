@@ -184,7 +184,7 @@ SecureShop/
 │   ├── shop.py                # customer-facing shop blueprint
 │   ├── admin.py               # admin blueprint
 │   ├── templates/             # Jinja templates (auto-escaped)
-│   └── static/                # CSS + typing.js (keystroke timing)
+│   └── static/                # CSS + typing.js (keystroke timing) + theme.js (dark/light)
 ├── tests/
 │   ├── test_security.py       # OWASP + auth attack self-tests
 │   └── test_labs.py           # Lab 1-5 topic self-tests

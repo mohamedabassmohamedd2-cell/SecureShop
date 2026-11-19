@@ -4,9 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}SecureShop{% endblock %}</title>
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+<div class="bg" aria-hidden="true">
+  <span class="blob blob-1"></span>
+  <span class="blob blob-2"></span>
+  <span class="blob blob-3"></span>
+</div>
+
 <header class="site-header">
   <div class="container header-inner">
     <a class="brand" href="{{ url_for('shop.index') }}">🔒 SecureShop</a>
@@ -27,6 +34,10 @@
         <a href="{{ url_for('auth.login') }}">Log in</a>
         <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Sign up</a>
       {% endif %}
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+        <span class="icon-light" aria-hidden="true">☀️</span>
+        <span class="icon-dark" aria-hidden="true">🌙</span>
+      </button>
     </nav>
   </div>
 </header>

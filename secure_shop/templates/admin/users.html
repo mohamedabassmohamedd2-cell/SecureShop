@@ -36,7 +36,7 @@
         </form>
         <form class="inline-form" method="post" action="{{ url_for('admin.set_credit', user_id=u.id) }}">
           <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          <input type="number" name="amount" step="0.01" min="0" value="{{ u.store_credit }}" style="width:90px">
+          <input class="input-narrow" type="number" name="amount" step="0.01" min="0" value="{{ u.store_credit }}">
           <button type="submit" class="link-button">Set credit</button>
         </form>
       </td>
