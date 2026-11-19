@@ -119,7 +119,10 @@ def create_app(test_config=None):
 
     @app.errorhandler(404)
     def not_found(e):
-        return render_template("errors/404.html"), 404
+        from flask import request
+        return (f"DIAG path={request.path!r} script_root={request.script_root!r} "
+                f"path_info={request.environ.get('PATH_INFO')!r} "
+                f"script_name={request.environ.get('SCRIPT_NAME')!r}"), 404
 
     @app.errorhandler(405)
     def method_not_allowed(e):
