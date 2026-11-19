@@ -22,32 +22,36 @@ from secure_shop import create_app  # noqa: E402
 
 _FUNCTION_PREFIX = "/api/index"
 
-_flask_app = create_app()
+app = create_app()
 
 
 class VercelPathFix:
-    """Normalise the request path for Vercel's serverless WSGI runtime.
+    """WSGI middleware that normalises the path for Vercel's serverless runtime.
 
-    Vercel rewrites every request to the serverless function at ``/api/index``;
-    depending on the runtime version the original path arrives either as an
-    ``/api/index`` prefix in PATH_INFO, or split across SCRIPT_NAME + PATH_INFO.
-    Strip that prefix (and reset SCRIPT_NAME) so Flask sees the real route.
+    Vercel rewrites every request to the function at ``/api/index``; the original
+    path can arrive either as an ``/api/index`` prefix in PATH_INFO or split
+    across SCRIPT_NAME + PATH_INFO. Strip that prefix so Flask sees the real
+    route. Registered via the standard ``app.wsgi_app = middleware(...)`` pattern
+    so ``app`` stays a genuine Flask instance.
     """
 
-    def __init__(self, app, prefix=_FUNCTION_PREFIX):
-        self.app = app
+    def __init__(self, wsgi_app, prefix=_FUNCTION_PREFIX):
+        self.wsgi_app = wsgi_app
         self.prefix = prefix
 
     def __call__(self, environ, start_response):
         script = environ.get("SCRIPT_NAME", "") or ""
         path = environ.get("PATH_INFO", "") or "/"
         full = script + path
-        if full.startswith(self.prefix):
-            remainder = full[len(self.prefix):]
-            full = remainder if remainder.startswith("/") else ("/" + remainder)
+        if full == self.prefix:
+            full = "/"
+        elif full.startswith(self.prefix + "/"):
+            full = full[len(self.prefix):]
+        elif full.startswith(self.prefix):
+            full = "/" + full[len(self.prefix):]
         environ["SCRIPT_NAME"] = ""
         environ["PATH_INFO"] = full or "/"
-        return self.app(environ, start_response)
+        return self.wsgi_app(environ, start_response)
 
 
-app = VercelPathFix(_flask_app)
+app.wsgi_app = VercelPathFix(app.wsgi_app)
