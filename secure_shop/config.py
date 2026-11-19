@@ -66,8 +66,21 @@ class Config:
     WTF_CSRF_ENABLED = False  # we use our own CSRF implementation
 
     def ensure_secrets(self):
-        """Create the instance secret file on first run and use it to seed the
-        Flask secret key and the password pepper. Returns the loaded secret."""
+        """Ensure the secret key and password pepper are set.
+
+        - If ``SECURESHOP_SECRET_KEY`` was supplied via the environment, use it
+          (and derive a stable pepper from it if none was set) WITHOUT touching
+          the filesystem. This is required on read-only / serverless platforms
+          such as Vercel, where ``instance/`` is not writable.
+        - Otherwise, generate a per-installation secret file under ``instance/``.
+        """
+        if self.SECRET_KEY:
+            if not self.PASSWORD_PEPPER:
+                import hashlib
+                self.PASSWORD_PEPPER = hashlib.sha256(
+                    ("pepper:" + self.SECRET_KEY).encode()).hexdigest()
+            return self.SECRET_KEY
+
         inst = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
         os.makedirs(inst, exist_ok=True)
         secret_file = os.path.join(inst, ".secret_key")
