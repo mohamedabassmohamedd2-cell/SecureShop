@@ -1,0 +1,31 @@
+# Render Blueprint — free hosting with automatic HTTPS.
+#
+# Deploy in a few clicks:
+#   1. Push this repo to GitHub.
+#   2. Go to https://render.com -> New -> Blueprint -> select the repo.
+#   3. Render reads this file and creates the web service for you.
+#
+# You get:  https://<service-name>.onrender.com  (HTTPS automatically).
+# Add your own domain under Settings -> Custom Domains (free TLS cert too).
+
+services:
+  - type: web
+    name: secureshop
+    runtime: python
+    region: frankfurt            # pick the region closest to you
+    plan: free
+    buildCommand: pip install -r requirements.txt -r requirements-prod.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT wsgi:app
+    autoDeploy: true
+    envVars:
+      - key: SECURESHOP_HTTPS
+        value: "1"
+      - key: SECURESHOP_TRUST_PROXY
+        value: "1"
+      - key: SECURESHOP_SECRET_KEY
+        generateValue: true
+      - key: SECURESHOP_PEPPER
+        generateValue: true
+      # Keep on-page confirmation links until you wire a real mailer.
+      - key: SECURESHOP_MAIL_DEV
+        value: "1"

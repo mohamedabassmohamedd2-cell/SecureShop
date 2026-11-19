@@ -50,6 +50,7 @@ folder on first run (both are git-ignored).
 | `SECURESHOP_SECRET_KEY`  | Override the auto-generated Flask session key      |
 | `SECURESHOP_PEPPER`      | Override the server-side password pepper           |
 | `SECURESHOP_HTTPS=1`     | Enable `Secure` cookies + HSTS (use behind TLS)    |
+| `SECURESHOP_TRUST_PROXY=1` | Trust reverse-proxy headers (set behind nginx/Render) |
 | `SECURESHOP_HOST`/`PORT` | Bind address/port (default `127.0.0.1:5000`)       |
 | `SECURESHOP_MAIL_DEV=0`  | Hide in-page confirmation/reset links (no mailer)  |
 | `SECURESHOP_ENFORCE_HOURS=1` | Enforce the 08:00–22:00 login window (Lab 5)  |
@@ -175,6 +176,7 @@ Expected output: `All security checks passed.` / `All lab-topic checks passed.`
 SecureShop/
 ├── run.py                     # development entry point
 ├── wsgi.py                    # production WSGI entry point
+├── render.yaml                # Render (free) one-click deployment blueprint
 ├── requirements.txt           # pinned application dependencies
 ├── requirements-prod.txt      # production WSGI server (gunicorn/waitress)
 ├── secure_shop/               # application package
@@ -194,15 +196,20 @@ SecureShop/
 ├── tests/
 │   ├── test_security.py       # OWASP + auth attack self-tests
 │   └── test_labs.py           # Lab 1-5 topic self-tests
-└── docs/                      # reports, coverage matrix, deployment guide
+└── docs/                      # reports, coverage matrix, deployment & free-hosting guides
 ```
 
 ---
 
 ## 6. Deployment
 
-To host SecureShop on a domain, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**
-for full instructions covering:
+**Want a free host with HTTPS?** See
+**[docs/FREE_HOSTING.md](docs/FREE_HOSTING.md)** (Render or PythonAnywhere,
+both with automatic HTTPS). Render can be deployed straight from this repo via
+[`render.yaml`](render.yaml).
+
+Full self-managed instructions are in
+**[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**:
 
 - Production WSGI server (gunicorn on Linux / waitress on Windows)
 - Reverse proxy (nginx) + TLS certificate (Let's Encrypt)

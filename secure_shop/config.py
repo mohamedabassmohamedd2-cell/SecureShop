@@ -26,6 +26,10 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get("SECURESHOP_HTTPS", "") == "1"  # True behind HTTPS
     SESSION_REFRESH_EACH_REQUEST = True
 
+    # Trust X-Forwarded-* headers from a reverse proxy (set this only when the
+    # app actually runs behind a trusted proxy, e.g. Render/nginx/Heroku).
+    TRUST_PROXY = os.environ.get("SECURESHOP_TRUST_PROXY", "") == "1"
+
     # ---- Security policy ----
     MAX_LOGIN_FAILURES = 5                       # lock an account after N bad attempts
     LOCKOUT_SECONDS = 15 * 60                    # 15 minutes

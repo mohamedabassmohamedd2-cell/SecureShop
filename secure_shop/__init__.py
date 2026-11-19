@@ -77,6 +77,13 @@ def create_app(test_config=None):
 
     db.init_db(app)
 
+    # When running behind a reverse proxy (nginx, Render, etc.), trust the
+    # X-Forwarded-For/Proto/Host headers so request.is_secure, HSTS, and the
+    # client-IP used for rate limiting all reflect the real client.
+    if app.config.get("TRUST_PROXY"):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     # Register blueprints.
     from . import auth, shop, admin
     app.register_blueprint(auth.bp)
