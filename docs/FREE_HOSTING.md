@@ -1,21 +1,20 @@
 # Free Hosting with HTTPS
 
-Two solid **free** options, both giving you **HTTPS automatically**:
+Three solid **free** options, all giving you **HTTPS automatically**:
 
-| | Render | PythonAnywhere |
-|---|---|---|
-| URL | `https://<name>.onrender.com` | `https://<user>.pythonanywhere.com` |
-| Custom domain | ✅ free (auto TLS) | ❌ paid only |
-| HTTPS | ✅ automatic | ✅ automatic |
-| Database | SQLite (ephemeral on free) | SQLite (persistent) |
-| Cost | Free tier | Free tier |
+| | Vercel | Render | PythonAnywhere |
+|---|---|---|---|
+| URL | `https://<name>.vercel.app` | `https://<name>.onrender.com` | `https://<user>.pythonanywhere.com` |
+| Custom domain | ✅ free (auto TLS) | ✅ free (auto TLS) | ❌ paid only |
+| HTTPS | ✅ automatic | ✅ automatic | ✅ automatic |
+| Card required | ❌ none | ✅ yes (verification) | ❌ none |
+| Database | Neon PostgreSQL | Neon PostgreSQL | SQLite (persistent) |
+| Cost | Free Hobby plan | Free tier | Free tier |
 
 > **Which should I pick?**
-> - Want a **custom domain** → use **Render**.
-> - Want **persistent data with zero changes** (SQLite file survives restarts) → use **PythonAnywhere**.
-> - Need both (custom domain + persistent data on free) → Render **plus** a free
->   PostgreSQL database (Neon free tier) — requires the small PostgreSQL switch
->   in `docs/DEPLOYMENT.md` §6.
+> - **No card + custom domain + HTTPS** → **Vercel** (needs a free Neon database).
+> - Want **persistent SQLite with zero changes** → **PythonAnywhere** (no card, but no custom domain).
+> - Want Render specifically → it now asks for a card on file (free plan is still $0).
 
 ---
 
@@ -130,6 +129,36 @@ A free uptime monitor that pings the site every 5 minutes prevents that sleep
   SMTP, keep `SECURESHOP_MAIL_DEV` default (confirmation links shown on-page).
 - The free account must stay active (log in periodically) or the app may be
   paused.
+
+---
+
+## Option C — Vercel (free, no card, custom domain + HTTPS)
+
+Vercel's Hobby plan is free, requires **no credit card**, and supports custom
+domains with automatic HTTPS. The trade-off is that Vercel functions are
+**serverless** (no persistent disk), so SecureShop must use a free **Neon**
+PostgreSQL database. The repo already has the required `vercel.json` and
+`api/index.py`.
+
+1. Sign up at <https://vercel.com> with GitHub (no card).
+2. **Add New → Project** → import `mohamedabassmohamedd2-cell/SecureShop`.
+3. Vercel auto-detects the Python + Flask setup (`vercel.json` + `api/index.py`).
+4. Before deploying, set these **Environment Variables** (Settings → Environment Variables):
+
+   | Key | Value |
+   |---|---|
+   | `DATABASE_URL` | your Neon `postgresql://…` URL |
+   | `SECURESHOP_SECRET_KEY` | a long random string |
+   | `SECURESHOP_PEPPER` | a long random string |
+   | `SECURESHOP_HTTPS` | `1` |
+   | `SECURESHOP_TRUST_PROXY` | `1` |
+
+5. **Deploy**. Your store is live at `https://secureshop.vercel.app` (HTTPS on by default).
+6. To use your own domain: Project → **Settings → Domains** → add it, then add the
+   `CNAME`/`A` record Vercel gives you. Vercel issues the TLS certificate free.
+
+> The free Neon database is created the same way as the Render guide (Option A.1):
+> [neon.tech](https://neon.tech) → New Project → copy the `postgresql://…` URL.
 
 ---
 

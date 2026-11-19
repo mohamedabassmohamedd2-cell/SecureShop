@@ -180,6 +180,8 @@ Expected output: `All security checks passed.` / `All lab-topic checks passed.`
 SecureShop/
 ├── run.py                     # development entry point
 ├── wsgi.py                    # production WSGI entry point
+├── api/index.py               # Vercel serverless entry point
+├── vercel.json                # Vercel deployment config
 ├── render.yaml                # Render (free) one-click deployment blueprint
 ├── requirements.txt           # pinned application dependencies
 ├── requirements-prod.txt      # production WSGI server (gunicorn/waitress)
@@ -208,8 +210,9 @@ SecureShop/
 ## 6. Deployment
 
 **Want a free host with HTTPS?** See
-**[docs/FREE_HOSTING.md](docs/FREE_HOSTING.md)** (Render or PythonAnywhere,
-both with automatic HTTPS). Render can be deployed straight from this repo via
+**[docs/FREE_HOSTING.md](docs/FREE_HOSTING.md)** (Vercel, Render, or
+PythonAnywhere — all with automatic HTTPS). Vercel and Render can be deployed
+straight from this repo via [`vercel.json`](vercel.json) and
 [`render.yaml`](render.yaml).
 
 Full self-managed instructions are in
