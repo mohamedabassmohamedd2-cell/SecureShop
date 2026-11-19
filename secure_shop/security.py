@@ -196,6 +196,7 @@ CSP_POLICY = (
 
 
 def apply_security_headers(response):
+    response.headers.setdefault("X-After", "runs")
     response.headers.setdefault("Content-Security-Policy", CSP_POLICY)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
