@@ -90,6 +90,23 @@ def create_app(test_config=None):
     app.register_blueprint(shop.bp)
     app.register_blueprint(admin.bp)
 
+    # Vercel serves this app at /api/index/<path>. Mirror every route under that
+    # prefix so the site works on Vercel's serverless runtime. Clean (unprefixed)
+    # routes are registered first, so url_for() keeps producing normal URLs.
+    for _rule in list(app.url_map.iter_rules()):
+        _path = _rule.rule
+        if _path.startswith("/api/index"):
+            continue
+        app.add_url_rule(
+            "/api/index" + _path,
+            _rule.endpoint,
+            app.view_functions[_rule.endpoint],
+            methods=_rule.methods,
+        )
+    app.add_url_rule(
+        "/api/index", "shop.index", app.view_functions["shop.index"], methods=["GET"]
+    )
+
     # Jinja helpers for templates.
     from .security import current_user
     app.jinja_env.globals["current_user"] = current_user
@@ -119,10 +136,7 @@ def create_app(test_config=None):
 
     @app.errorhandler(404)
     def not_found(e):
-        from flask import request
-        return (f"DIAG path={request.path!r} script_root={request.script_root!r} "
-                f"path_info={request.environ.get('PATH_INFO')!r} "
-                f"script_name={request.environ.get('SCRIPT_NAME')!r}"), 404
+        return render_template("errors/404.html"), 404
 
     @app.errorhandler(405)
     def method_not_allowed(e):
