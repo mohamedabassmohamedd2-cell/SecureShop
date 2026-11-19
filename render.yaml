@@ -29,9 +29,3 @@ services:
       # Keep on-page confirmation links until you wire a real mailer.
       - key: SECURESHOP_MAIL_DEV
         value: "1"
-      # Optional: paste your free Neon PostgreSQL URL here (starts with
-      # postgresql://) so data persists across deploys. Leave empty to use SQLite
-      # (ephemeral on the free tier). This value is set in the Render dashboard,
-      # not committed to the repo.
-      - key: DATABASE_URL
-        sync: false
